@@ -3,4 +3,4 @@ project(KBOS_Ground C)
 
 set(CMAKE_C_STANDARD 11)
 
-add_executable(KBOS_Ground main.c)
+add_executable(KBOS_Ground Taking_Flight.c)
