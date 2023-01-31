@@ -3,4 +3,10 @@ project(KBOS_Ground C)
 
 set(CMAKE_C_STANDARD 11)
 
-add_executable(KBOS_Ground Taking_Flight.c)
+set(THREADS_PREFER_PTHREAD_FLAG ON)
+
+find_package(Threads REQUIRED)
+
+add_executable(KBOS_Ground Taking_Flight.c Utils.c Utils.h)
+
+target_link_libraries(KBOS_Ground PRIVATE Threads::Threads)
