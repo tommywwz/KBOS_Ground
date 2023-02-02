@@ -19,8 +19,10 @@ Plane cessnas[SMALL_PLANE_COUNT];
 Plane airbuses[LARGE_PLANE_COUNT];
 pthread_t threads[SMALL_PLANE_COUNT + LARGE_PLANE_COUNT];
 
-int long_runway_combs_pool[] = {0, 3};
-int short_runway_combs_pool[] = {1, 2, 4, 5, 6, 7};
+runways_combinations long_runway_combs_pool[] = {RUNWAY_1_4_6, RUNWAY_2_3_5};
+runways_combinations short_runway_combs_pool[] = {RUNWAY_1_4, RUNWAY_4_6,
+                                                  RUNWAY_2_3, RUNWAY_3_5,
+                                                  RUNWAY_1_2, RUNWAY_3_4};
 
 int runway_combs_pool[][3] = {{1, 4, 6}, {1, 4}, {4, 6},
                               {2, 3, 5}, {2, 3}, {3, 5},
@@ -59,16 +61,11 @@ for (int i = 0; i < 4; i++) {
 //    return 0;
 	for (int i = 0; i < SMALL_PLANE_COUNT; ++i) {
 		cessnas[i].id = i;
-        //todo: do we need to free up the space
-//        cessnas[i].myRunway[0] = 1;
-//        cessnas[i].myRunway[1] = 1;
-//        cessnas[i].myRunway[2] = 1;
 		cessnas[i].type = PLANE_CESSNA_172;
 		cessnas[i].current_state = STATE_IDLE;
 	}
 	for (int i = 0; i < LARGE_PLANE_COUNT; ++i) {
 		airbuses[i].id = i + SMALL_PLANE_COUNT;
-        //todo: do we need to free up the space
 		airbuses[i].type = PLANE_AIRBUS_A380;
 		airbuses[i].current_state = STATE_IDLE;
 	}
@@ -110,7 +107,7 @@ void Await_Takeoff(Plane *plane) {
     int* ptr_my_runway = plane->myRunway;
     int runway_size;
 
-    int my_runway_comb_key; // the key to my runway combination
+    runways_combinations my_runway_comb_key; // the key to my runway combination
     // obtaining a runway combination by the size of the plane
     if (ptype == PLANE_AIRBUS_A380) {
         runway_size = 3;
