@@ -18,6 +18,8 @@ Runway runways[4];
 Plane cessnas[SMALL_PLANE_COUNT];
 Plane airbuses[LARGE_PLANE_COUNT];
 pthread_t threads[SMALL_PLANE_COUNT + LARGE_PLANE_COUNT];
+sem_t runway_cleared[4];
+pthread_mutex_t runway_queue_lock[4];
 
 runways_combinations long_runway_combs_pool[] = {RUNWAY_1_4_6, RUNWAY_2_3_5};
 runways_combinations short_runway_combs_pool[] = {RUNWAY_1_4, RUNWAY_4_6,
@@ -36,29 +38,14 @@ int main() {
 	fptr = fopen("seed.txt", "r");
 	seed = file2int(fptr);
 	srand(seed);  // set seed for random number
+
 /******************************************************** Init ********************************************************/
-for (int i = 0; i < 4; i++) {
-    runways[i].name = (runway_identifiers)i;
-    runways[i].queue_counter = 0;
-}
-//	for (int i = 0; i < LONG_RWY_COUNT; ++i) {
-//        // initialize long runways
-//        int *src_ptr = long_rwys[i];
-//        Long_Runways[i].name = src_ptr;
-//        Long_Runways[i].if_cleared = 1;
-//	}
-//    for (int i = 0; i < SHORT_RWY_COUNT; ++i) {
-//        // initialize short runways
-//        int *src_ptr = short_rwys[i];
-//        Short_Runways[i].name = src_ptr;
-//        Short_Runways[i].if_cleared = 1;
-//    }
-//    debug:
-//    printf("2nd long runway %d, %d, %d\n",
-//           Long_Runways[1].name[0],
-//           Long_Runways[1].name[1],
-//           Long_Runways[1].name[2]);
-//    return 0;
+    for (int i = 0; i < 4; i++) {
+        runways[i].name = (runway_identifiers)i;
+        runways[i].queue_counter = 0;
+        sem_init(&runway_cleared[i], 0, 0);
+    }
+
 	for (int i = 0; i < SMALL_PLANE_COUNT; ++i) {
 		cessnas[i].id = i;
 		cessnas[i].type = PLANE_CESSNA_172;
@@ -106,6 +93,7 @@ void Await_Takeoff(Plane *plane) {
     plane_type ptype = plane->type;
     int* ptr_my_runway = plane->myRunway;
     int runway_size;
+    int my_position;
 
     runways_combinations my_runway_comb_key; // the key to my runway combination
     // obtaining a runway combination by the size of the plane
@@ -129,7 +117,9 @@ void Await_Takeoff(Plane *plane) {
     copyArray(ptr_my_combination, ptr_my_runway, runway_size, reverse_takeoff);
 
     //todo shared data protection
-    runways[runway_ident].queue_counter ++;
+    pthread_mutex_lock(&runway_queue_lock[runway_ident]);
+    my_position = ++runways[runway_ident].queue_counter;
+    pthread_mutex_unlock(&runway_queue_lock[runway_ident]);
     //todo ^ sensitive region ^
 
 	// todo print intended runway order
@@ -142,6 +132,13 @@ void Await_Takeoff(Plane *plane) {
     printf("\n");
 
 	// todo check if runways are occupied
+    // start waiting
+    while (1) {
+        // todo wait until an plane has takeoff, then decrease the position
+        sem_wait(&runway_cleared[runway_ident]);
+        // todo proceed to next state when my position is 1
+    }
+
 	// todo if occupied, print a note to the console indicating it must wait
 	// todo sleep on a semaphore until it is able to proceed
 	// todo if not occupied, occupy the runways and proceed to takeoff, print to console that it is doing so
