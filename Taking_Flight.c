@@ -12,10 +12,19 @@ void Await_Landing(Plane *plane);
 
 void Landing(Plane *plane);
 
-Runway runways[6];
+//Short_Runway Short_Runways[6];
+//Long_Runway Long_Runways[2];
+Runway runways[4];
 Plane cessnas[SMALL_PLANE_COUNT];
 Plane airbuses[LARGE_PLANE_COUNT];
 pthread_t threads[SMALL_PLANE_COUNT + LARGE_PLANE_COUNT];
+
+int long_runway_combs_pool[] = {0, 3};
+int short_runway_combs_pool[] = {1, 2, 4, 5, 6, 7};
+
+int runway_combs_pool[][3] = {{1, 4, 6}, {1, 4}, {4, 6},
+                              {2, 3, 5}, {2, 3}, {3, 5},
+                              {1, 2}, {3, 4}};
 
 int main() {
 	printf("Starting KBOS Ground Control System...\n");
@@ -26,17 +35,40 @@ int main() {
 	seed = file2int(fptr);
 	srand(seed);  // set seed for random number
 /******************************************************** Init ********************************************************/
-	for (int i = 0; i < 6; ++i) {
-		runways[i].id = i;
-		runways[i].occupied_by = -1;
-	}
+for (int i = 0; i < 4; i++) {
+    runways[i].name = (runway_identifiers)i;
+    runways[i].queue_counter = 0;
+}
+//	for (int i = 0; i < LONG_RWY_COUNT; ++i) {
+//        // initialize long runways
+//        int *src_ptr = long_rwys[i];
+//        Long_Runways[i].name = src_ptr;
+//        Long_Runways[i].if_cleared = 1;
+//	}
+//    for (int i = 0; i < SHORT_RWY_COUNT; ++i) {
+//        // initialize short runways
+//        int *src_ptr = short_rwys[i];
+//        Short_Runways[i].name = src_ptr;
+//        Short_Runways[i].if_cleared = 1;
+//    }
+//    debug:
+//    printf("2nd long runway %d, %d, %d\n",
+//           Long_Runways[1].name[0],
+//           Long_Runways[1].name[1],
+//           Long_Runways[1].name[2]);
+//    return 0;
 	for (int i = 0; i < SMALL_PLANE_COUNT; ++i) {
 		cessnas[i].id = i;
+        //todo: do we need to free up the space
+//        cessnas[i].myRunway[0] = 1;
+//        cessnas[i].myRunway[1] = 1;
+//        cessnas[i].myRunway[2] = 1;
 		cessnas[i].type = PLANE_CESSNA_172;
 		cessnas[i].current_state = STATE_IDLE;
 	}
 	for (int i = 0; i < LARGE_PLANE_COUNT; ++i) {
 		airbuses[i].id = i + SMALL_PLANE_COUNT;
+        //todo: do we need to free up the space
 		airbuses[i].type = PLANE_AIRBUS_A380;
 		airbuses[i].current_state = STATE_IDLE;
 	}
@@ -63,7 +95,7 @@ void Idle(Plane *plane) {
 
 	char str[100];
 	print_helper(str, plane);
-	printf("%s: sleep for %7d μs before takeoff\n", str, sleep_time);
+	printf("%s: sleep for %7d μs at terminal\n", str, sleep_time);
 
 	usleep(sleep_time);
 	Await_Takeoff(plane);
@@ -72,9 +104,46 @@ void Idle(Plane *plane) {
 void Await_Takeoff(Plane *plane) {
 	printf("Await_Takeoff\n");
 	plane->current_state = STATE_AWAIT_TAKEOFF;
+
 	// todo chose random set of runways for takeoff
-	// todo chose random order to use the set of runways
+    plane_type ptype = plane->type;
+    int* ptr_my_runway = plane->myRunway;
+    int runway_size;
+
+    int my_runway_comb_key; // the key to my runway combination
+    // obtaining a runway combination by the size of the plane
+    if (ptype == PLANE_AIRBUS_A380) {
+        runway_size = 3;
+        int runway_key = rand() % LONG_RWY_COUNT;
+        my_runway_comb_key = long_runway_combs_pool[runway_key];
+    } else {
+        runway_size = 2;
+        int runway_key = rand() % SHORT_RWY_COUNT;
+        my_runway_comb_key = short_runway_combs_pool[runway_key];
+    }
+    // find the runway identifier of my runway combination
+    runway_identifiers runway_ident = find_runway_ident(my_runway_comb_key);
+
+    // todo chose random order to use the set of runways
+    int* ptr_my_combination = runway_combs_pool[my_runway_comb_key]; // get my runway combination using the key
+
+    int reverse_takeoff = rand() % 2;  // 0 is default direction, 1 is reverse direction
+
+    copyArray(ptr_my_combination, ptr_my_runway, runway_size, reverse_takeoff);
+
+    //todo shared data protection
+    runways[runway_ident].queue_counter ++;
+    //todo ^ sensitive region ^
+
 	// todo print intended runway order
+    char str[100];
+    print_helper(str, plane);
+    printf("%s: Lineup at Runway ", str);
+    for(int i=0; i<runway_size; i++) {
+        printf("%d", ptr_my_runway[i]);
+    }
+    printf("\n");
+
 	// todo check if runways are occupied
 	// todo if occupied, print a note to the console indicating it must wait
 	// todo sleep on a semaphore until it is able to proceed
