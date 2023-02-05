@@ -95,7 +95,7 @@ void Idle(Plane *plane) {
 
 	char str[100];
 	print_helper(str, plane);
-	printf(" ------ %s: sleep for %7d μs at terminal\n", str, sleep_time);
+	printf(YEL"%s: sleep for %7d μs at terminal\n"RESET, str, sleep_time);
 
 	usleep(sleep_time);
 	Await_Takeoff(plane);
@@ -105,7 +105,7 @@ void Await_Takeoff(Plane *plane) {
 	plane->current_state = STATE_AWAIT_TAKEOFF;
 	char str[100];
 	print_helper(str, plane);
-	printf(" ------ %s: Awaiting Takeoff\n", str);
+	printf(MAG"%s: Awaiting Takeoff\n"RESET, str);
 
 	// chose random order to use the set of runways
 	int reverse = rand() % 2;
@@ -138,7 +138,7 @@ void Await_Takeoff(Plane *plane) {
 	}
 
 	// print intended runway order
-	printf("%s: Lineup at Runway ", str);
+	printf("\t%s: Lineup at Runway ", str);
 	for (int i = 0; i < my_runway_size; ++i) {
 		printf("%d", plane->myRunway[i]);
 	}
@@ -149,12 +149,13 @@ void Await_Takeoff(Plane *plane) {
 		for (int i = 0; i < 3; ++i) { // for each runway
 			if (sem_trywait(long_runways[random_index].sem_runway_regions[i]) == -1) { // try to occupy the runway
 				// if occupied, print a note to the console indicating it must wait
-				printf("%s: Waiting - runway %d is occupied\n", str, plane->myRunway[i]);
+				printf("\t%s: Waiting - runway %d is occupied\n", str, long_runways[random_index].runway_name[i]);
 				// sleep on a semaphore until it is able to proceed
 				sem_wait(long_runways[random_index].sem_runway_regions[i]);
+                printf("\t%s: Occupying runway %d\n", str, long_runways[random_index].runway_name[i]);
 			} else {
 				// if not occupied, occupy the runways and proceed to take off, print to console that it is doing so
-				printf("%s: Occupying runway %d\n", str, plane->myRunway[i]);
+				printf("\t%s: Occupying runway %d\n", str, long_runways[random_index].runway_name[i]);
 			}
 //			printf("%s: DEBUG: Checking Availability runway %d\n", str, plane->myRunway[i]);
 		}
@@ -162,13 +163,14 @@ void Await_Takeoff(Plane *plane) {
 		for (int i = 0; i < 2; ++i) { // for each runway
 			if (sem_trywait(short_runways[random_index].sem_runway_regions[i]) == -1) {
 				// if occupied, print a note to the console indicating it must wait
-				printf("%s: Waiting - runway %d is occupied\n", str, plane->myRunway[i]);
+				printf("\t%s: Waiting - runway %d is occupied\n", str, short_runways[random_index].runway_name[i]);
 
 				// sleep on a semaphore until it is able to proceed
 				sem_wait(short_runways[random_index].sem_runway_regions[i]);
+                printf("\t%s: Occupying runway %d\n", str, short_runways[random_index].runway_name[i]);
 			} else {
 				// if not occupied, occupy the runways and proceed to take off, print to console that it is doing so
-				printf("%s: Occupying runway %d\n", str, plane->myRunway[i]);
+				printf("\t%s: Occupying runway %d\n", str, short_runways[random_index].runway_name[i]);
 			}
 //			printf("%s: DEBUG: Checking Availability runway %d\n", str, plane->myRunway[i]);
 		}
@@ -183,7 +185,7 @@ void Takeoff(Plane *plane) {
 	char str[100];
 	print_helper(str, plane);
 
-	printf(" ------ %s: Clear to departure\n", str);
+	printf(GRN"%s: Clear to departure\n"RESET, str);
 	// release runways
 	if (plane->type == PLANE_AIRBUS_A380) {
 		for (int i = 0; i < 3; ++i) {   // Loop: repeat until the plane left the last region
@@ -191,7 +193,7 @@ void Takeoff(Plane *plane) {
 			int sleep_time = rand() % 1000000; // 0 - 1 seconds
 
 			print_helper(str, plane);  // load plane information
-			printf("%s: is rolling to runway %d\n", str, plane->myRunway[i]);
+			printf("\t%s: is rolling to runway %d\n", str, plane->myRunway[i]);
 			usleep(sleep_time); // usleep for a random time
 			sem_post(&semaphores[plane->myRunway[i]]); // post current runway region and roll to the next runway region
 		}
@@ -201,7 +203,7 @@ void Takeoff(Plane *plane) {
 			int sleep_time = rand() % 1000000; // 0 - 1 seconds
 
 			print_helper(str, plane);   // load plane information
-			printf("%s: is rolling to runway %d\n", str, plane->myRunway[i]);
+			printf("\t%s: is rolling to runway %d\n", str, plane->myRunway[i]);
 			usleep(sleep_time); // usleep for a random time
 			sem_post(&semaphores[plane->myRunway[i]]); // post current runway region and roll to the next runway region
 		}
@@ -213,11 +215,11 @@ void Flying(Plane *plane) {
 	plane->current_state = STATE_FLYING;
     char str[100];
     print_helper(str, plane);
-    printf(" ------ %s: Climb and Maintain %d000, Performing Airfield Traffic Pattern\n", str, rand() % 4 + 3);
+    printf(CYN"%s: Climb and Maintain %d000, Performing Airfield Traffic Pattern\n"RESET, str, rand() % 4 + 3);
 	// get random time, announce intended sleep duration
 	int sleep_time = rand() % 10000000; // 0 - 10 seconds
 
-	printf("%s: sleep for %7d μs in the air\n", str, sleep_time);
+	printf("\t%s: sleep for %7d μs in the air\n", str, sleep_time);
 	usleep(sleep_time);
 	Await_Landing(plane);
 }
@@ -226,7 +228,7 @@ void Await_Landing(Plane *plane) {
 	plane->current_state = STATE_AWAIT_LANDING;
 	char str[100];
 	print_helper(str, plane);
-	printf(" ------ %s: Inbound for Landing\n", str);
+	printf(MAG"%s: Inbound for Landing\n"RESET, str);
 
 	// chose random order to use the set of runways
 	int reverse = rand() % 2;
@@ -259,7 +261,7 @@ void Await_Landing(Plane *plane) {
 	}
 
 	// print intended runway order
-	printf("%s: Request Landing at Runway ", str);
+	printf("\t%s: Request Landing at Runway ", str);
 	for (int i = 0; i < my_runway_size; ++i) {
 		printf("%d", plane->myRunway[i]);
 	}
@@ -270,12 +272,13 @@ void Await_Landing(Plane *plane) {
 		for (int i = 0; i < 3; ++i) { // for each runway
 			if (sem_trywait(long_runways[random_index].sem_runway_regions[i]) == -1) { // try to occupy the runway
 				// if occupied, print a note to the console indicating it must wait
-				printf("%s: Waiting - runway %d is occupied\n", str, plane->myRunway[i]);
+				printf("\t%s: Waiting - runway %d is occupied\n", str, long_runways[random_index].runway_name[i]);
 				// sleep on a semaphore until it is able to proceed
 				sem_wait(long_runways[random_index].sem_runway_regions[i]);
+                printf("\t%s: Occupying runway %d\n", str, long_runways[random_index].runway_name[i]);
 			} else {
 				// if not occupied, occupy the runways and proceed to take off, print to console that it is doing so
-				printf("%s: Occupying runway %d\n", str, plane->myRunway[i]);
+				printf("\t%s: Occupying runway %d\n", str, long_runways[random_index].runway_name[i]);
 			}
 //			printf("%s: DEBUG: Checking Availability runway %d\n", str, plane->myRunway[i]);
 		}
@@ -283,13 +286,14 @@ void Await_Landing(Plane *plane) {
 		for (int i = 0; i < 2; ++i) { // for each runway
 			if (sem_trywait(short_runways[random_index].sem_runway_regions[i]) == -1) {
 				// if occupied, print a note to the console indicating it must wait
-				printf("%s: Waiting - runway %d is occupied\n", str, plane->myRunway[i]);
+				printf("\t%s: Waiting - runway %d is occupied\n", str, short_runways[random_index].runway_name[i]);
 
 				// sleep on a semaphore until it is able to proceed
 				sem_wait(short_runways[random_index].sem_runway_regions[i]);
+                printf("\t%s: Occupying runway %d\n", str, short_runways[random_index].runway_name[i]);
 			} else {
 				// if not occupied, occupy the runways and proceed to take off, print to console that it is doing so
-				printf("%s: Occupying runway %d\n", str, plane->myRunway[i]);
+				printf("\t%s: Occupying runway %d\n", str, short_runways[random_index].runway_name[i]);
 			}
 //			printf("%s: DEBUG: Checking Availability runway %d\n", str, plane->myRunway[i]);
 		}
@@ -305,7 +309,7 @@ void Landing(Plane *plane) {
 	char str[100];
 	print_helper(str, plane);
 
-	printf(" ------ %s: Cleared to land\n", str);
+	printf(BLU"%s: Cleared to land\n"RESET, str);
 	// release runways
 	if (plane->type == PLANE_AIRBUS_A380) {
 		for (int i = 0; i < 3; ++i) {   // Loop: repeat until the plane left the last region
@@ -313,7 +317,7 @@ void Landing(Plane *plane) {
 			int sleep_time = rand() % 1000000; // 0 - 1 seconds
 
 			print_helper(str, plane);  // load plane information
-			printf("%s: is landing on runway %d\n", str, plane->myRunway[i]);
+			printf("\t%s: is landing on runway %d\n", str, plane->myRunway[i]);
 			usleep(sleep_time); // usleep for a random time
 			sem_post(&semaphores[plane->myRunway[i]]); // post current runway region and roll to the next runway region
 		}
@@ -323,11 +327,11 @@ void Landing(Plane *plane) {
 			int sleep_time = rand() % 1000000; // 0 - 1 seconds
 
 			print_helper(str, plane);   // load plane information
-			printf("%s: is landing on runway %d\n", str, plane->myRunway[i]);
+			printf("\t%s: is landing on runway %d\n", str, plane->myRunway[i]);
 			usleep(sleep_time); // usleep for a random time
 			sem_post(&semaphores[plane->myRunway[i]]); // post current runway region and roll to the next runway region
 		}
 	}
-	printf("%s: Taxing to terminal, Goodbye KBOS Ground!\n", str);
+	printf("\t%s: Taxing to terminal, Goodbye KBOS Ground!\n", str);
 	Idle(plane);
 }
