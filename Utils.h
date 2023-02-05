@@ -57,8 +57,6 @@ typedef struct Plane {
 
 char *state_to_string(state s);
 
-void copyArray(int* src_arr, int* dest_arr, int size, int reverse);
-
 int file2int(FILE *ptr);
 
 void print_helper(char *str, Plane *plane);
