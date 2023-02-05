@@ -19,38 +19,6 @@ char *state_to_string(state s) {
 	}
 }
 
-runway_identifiers find_runway_ident (int rwy_key) {
-    runway_identifiers rwy_ident;
-    if (rwy_key < 3) {
-        rwy_ident = RUNWAY146;
-    } else if (rwy_key < 6) {
-        rwy_ident = RUNWAY235;
-    } else if (rwy_key == 6) {
-        rwy_ident = RUNWAY12;
-    } else if (rwy_key == 7) {
-        rwy_ident = RUNWAY34;
-    } else {
-        printf("INVALID RUNWAY GENERATION KEY!\n");
-        exit(-1);
-    }
-    return rwy_ident;
-}
-
-void copyArray(int* src_arr, int* dest_arr, int size, int reverse) {
-    int start = 0;
-    int end = size - 1;
-    memcpy(dest_arr, src_arr, size * sizeof(int));
-    if (reverse) {
-        while (start < end){
-            int temp = dest_arr[start];
-            dest_arr[start] = dest_arr[end];
-            dest_arr[end] = temp;
-            start++;
-            end--;
-        }
-    }
-}
-
 void print_helper(char *str, Plane *plane) {
 	sprintf(str,
 	        "[Plane Thread %2d], type [%s], state [%s]",
