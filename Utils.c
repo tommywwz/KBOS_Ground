@@ -28,6 +28,44 @@ void print_helper(char *str, Plane *plane) {
 	        state_to_string(plane->current_state));
 }
 
+void get_real_runway(Plane *plane) {
+	// plane->myRunway to string
+	char *str = malloc(4);
+
+	if (plane->type == PLANE_CESSNA_172)
+		sprintf(str, "%d%d", plane->myRunway[0], plane->myRunway[1]);
+	else if (plane->type == PLANE_AIRBUS_A380)
+		sprintf(str, "%d%d%d", plane->myRunway[0], plane->myRunway[1], plane->myRunway[2]);
+
+	if (strcmp(str, "146") == 0 ||
+	    strcmp(str, "641") == 0 ||
+	    strcmp(str, "235") == 0 ||
+	    strcmp(str, "532") == 0) {
+		for (int i = 0; i < 3; ++i) {
+			if (plane->myRunway[i] < 5)
+				plane->realRunway[i] = plane->myRunway[i] + 6;
+			else
+				plane->realRunway[i] = plane->myRunway[i];
+
+		}
+	}
+	if (strcmp(str, "14") == 0 ||
+	    strcmp(str, "41") == 0 ||
+	    strcmp(str, "23") == 0 ||
+	    strcmp(str, "32") == 0 ||
+	    strcmp(str, "35") == 0 ||
+	    strcmp(str, "53") == 0 ||
+	    strcmp(str, "46") == 0 ||
+	    strcmp(str, "64") == 0) {
+		for (int i = 0; i < 2; ++i) {
+			if (plane->myRunway[i] < 5)
+				plane->realRunway[i] = plane->myRunway[i] + 6;
+			else
+				plane->realRunway[i] = plane->myRunway[i];
+		}
+	}
+}
+
 int file2int(FILE *ptr) {
 	// reference: https://stackoverflow.com/questions/3747086/reading-the-whole-text-file-into-a-char-array-in-c
 	long lSize;

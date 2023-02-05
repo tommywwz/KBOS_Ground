@@ -8,6 +8,7 @@
 #include <unistd.h>
 #include <semaphore.h>
 #include <string.h>
+#include <sys/time.h>
 
 #define YEL   "\x1B[33m"
 #define MAG  "\x1B[35m"
@@ -19,8 +20,9 @@
 #define RWY_REGIONS_COUNT 6
 #define SHORT_RWY_COUNT 6
 #define LONG_RWY_COUNT 2
-#define SMALL_PLANE_COUNT 30
-#define LARGE_PLANE_COUNT 15
+#define SMALL_PLANE_COUNT 2
+#define LARGE_PLANE_COUNT 1
+#define LOG_ROUNDS_COUNT 3
 
 typedef enum state {
 	STATE_IDLE,
@@ -53,6 +55,9 @@ typedef struct Plane {
     int myRunway[3];
 	plane_type type;
 	state current_state;
+	FILE *log_file;
+	int rounds;
+	int realRunway[3];
 } Plane;
 
 char *state_to_string(state s);
@@ -60,5 +65,7 @@ char *state_to_string(state s);
 int file2int(FILE *ptr);
 
 void print_helper(char *str, Plane *plane);
+
+void get_real_runway(Plane *plane);
 
 #endif //KBOS_GROUND_UTILS_H

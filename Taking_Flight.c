@@ -64,11 +64,23 @@ int main() {
 		cessnas[i].id = i;
 		cessnas[i].type = PLANE_CESSNA_172;
 		cessnas[i].current_state = STATE_IDLE;
+		// write ID to csv file with id + 1 as filename
+		char filename[100];
+		sprintf(filename, "%d.csv", cessnas[i].id + 1);
+		cessnas[i].log_file = fopen(filename, "w");
+		fprintf(cessnas[i].log_file, "State,Location,uSecWait,Reverse\n");
+		cessnas[i].rounds = 0;
 	}
 	for (int i = 0; i < LARGE_PLANE_COUNT; ++i) {
 		airbuses[i].id = i + SMALL_PLANE_COUNT;
 		airbuses[i].type = PLANE_AIRBUS_A380;
 		airbuses[i].current_state = STATE_IDLE;
+		// write ID to csv file with id + 1 as filename
+		char filename[100];
+		sprintf(filename, "%d.csv", airbuses[i].id + 1);
+		airbuses[i].log_file = fopen(filename, "w");
+		fprintf(airbuses[i].log_file, "State,Location,uSecWait,Reverse\n");
+		airbuses[i].rounds = 0;
 	}
 /******************************************************* Spawn! *******************************************************/
 	for (int i = 0; i < SMALL_PLANE_COUNT; ++i) {
@@ -97,11 +109,27 @@ void Idle(Plane *plane) {
 	print_helper(str, plane);
 	printf(YEL"%s: sleep for %7d μs at terminal\n"RESET, str, sleep_time);
 
+	if (plane->rounds > LOG_ROUNDS_COUNT) {}
+	else if (plane->rounds == LOG_ROUNDS_COUNT) {
+		// write to csv file
+		fclose(plane->log_file);
+		printf("%s: log file closed------------------------\n", str);
+	} else {
+		// log state change
+		fprintf(plane->log_file, "1,0,%d\n", sleep_time);
+	}
+	plane->rounds++;
+
 	usleep(sleep_time);
 	Await_Takeoff(plane);
 }
 
 void Await_Takeoff(Plane *plane) {
+	// start an usec timer
+	struct timeval tv;
+	gettimeofday(&tv, NULL);
+	unsigned long start = 1000000 * tv.tv_sec + tv.tv_usec;
+
 	plane->current_state = STATE_AWAIT_TAKEOFF;
 	char str[100];
 	print_helper(str, plane);
@@ -175,6 +203,14 @@ void Await_Takeoff(Plane *plane) {
 //			printf("%s: DEBUG: Checking Availability runway %d\n", str, plane->myRunway[i]);
 		}
 	}
+
+	// end timer
+	gettimeofday(&tv, NULL);
+	unsigned long end = 1000000 * tv.tv_sec + tv.tv_usec;
+	int sleep_time = end - start;
+	// log state change
+	fprintf(plane->log_file, "2,0,%d,%d\n", sleep_time, reverse);
+
 	Takeoff(plane);
 }
 
@@ -184,6 +220,7 @@ void Takeoff(Plane *plane) {
 
 	char str[100];
 	print_helper(str, plane);
+	get_real_runway(plane);
 
 	printf(GRN"%s: Clear to departure\n"RESET, str);
 	// release runways
@@ -194,6 +231,8 @@ void Takeoff(Plane *plane) {
 
 			print_helper(str, plane);  // load plane information
 			printf("\t%s: is rolling to runway %d\n", str, plane->myRunway[i]);
+
+			fprintf(plane->log_file, "3,%d,%d\n", plane->realRunway[i], sleep_time);
 			usleep(sleep_time); // usleep for a random time
 			sem_post(&semaphores[plane->myRunway[i]]); // post current runway region and roll to the next runway region
 		}
@@ -204,6 +243,8 @@ void Takeoff(Plane *plane) {
 
 			print_helper(str, plane);   // load plane information
 			printf("\t%s: is rolling to runway %d\n", str, plane->myRunway[i]);
+
+			fprintf(plane->log_file, "3,%d,%d\n", plane->realRunway[i], sleep_time);
 			usleep(sleep_time); // usleep for a random time
 			sem_post(&semaphores[plane->myRunway[i]]); // post current runway region and roll to the next runway region
 		}
@@ -220,11 +261,19 @@ void Flying(Plane *plane) {
 	int sleep_time = rand() % 10000000; // 0 - 10 seconds
 
 	printf("\t%s: sleep for %7d μs in the air\n", str, sleep_time);
+
+	// log state change
+	fprintf(plane->log_file, "4,11,%d\n", sleep_time);
 	usleep(sleep_time);
 	Await_Landing(plane);
 }
 
 void Await_Landing(Plane *plane) {
+	// start an usec timer
+	struct timeval tv;
+	gettimeofday(&tv, NULL);
+	unsigned long start = 1000000 * tv.tv_sec + tv.tv_usec;
+
 	plane->current_state = STATE_AWAIT_LANDING;
 	char str[100];
 	print_helper(str, plane);
@@ -299,6 +348,13 @@ void Await_Landing(Plane *plane) {
 		}
 	}
 
+	// end timer
+	gettimeofday(&tv, NULL);
+	unsigned long end = 1000000 * tv.tv_sec + tv.tv_usec;
+	int sleep_time = end - start;
+	// log state change
+	fprintf(plane->log_file, "5,11,%d,%d\n", sleep_time, reverse);
+
 	Landing(plane);
 }
 
@@ -308,6 +364,7 @@ void Landing(Plane *plane) {
 
 	char str[100];
 	print_helper(str, plane);
+	get_real_runway(plane);
 
 	printf(BLU"%s: Cleared to land\n"RESET, str);
 	// release runways
@@ -318,6 +375,8 @@ void Landing(Plane *plane) {
 
 			print_helper(str, plane);  // load plane information
 			printf("\t%s: is landing on runway %d\n", str, plane->myRunway[i]);
+
+			fprintf(plane->log_file, "6,%d,%d\n", plane->realRunway[i], sleep_time);
 			usleep(sleep_time); // usleep for a random time
 			sem_post(&semaphores[plane->myRunway[i]]); // post current runway region and roll to the next runway region
 		}
@@ -328,6 +387,8 @@ void Landing(Plane *plane) {
 
 			print_helper(str, plane);   // load plane information
 			printf("\t%s: is landing on runway %d\n", str, plane->myRunway[i]);
+
+			fprintf(plane->log_file, "6,%d,%d\n", plane->realRunway[i], sleep_time);
 			usleep(sleep_time); // usleep for a random time
 			sem_post(&semaphores[plane->myRunway[i]]); // post current runway region and roll to the next runway region
 		}
