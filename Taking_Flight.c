@@ -95,7 +95,7 @@ void Idle(Plane *plane) {
 
 	char str[100];
 	print_helper(str, plane);
-	printf("%s: sleep for %7d μs at terminal\n", str, sleep_time);
+	printf(" ------ %s: sleep for %7d μs at terminal\n", str, sleep_time);
 
 	usleep(sleep_time);
 	Await_Takeoff(plane);
@@ -105,7 +105,7 @@ void Await_Takeoff(Plane *plane) {
 	plane->current_state = STATE_AWAIT_TAKEOFF;
 	char str[100];
 	print_helper(str, plane);
-	printf("%s: Await_Takeoff\n", str);
+	printf(" ------ %s: Awaiting Takeoff\n", str);
 
 	// chose random order to use the set of runways
 	int reverse = rand() % 2;
@@ -183,13 +183,12 @@ void Takeoff(Plane *plane) {
 	char str[100];
 	print_helper(str, plane);
 
-	printf("%s: Clear for departure\n", str);
+	printf(" ------ %s: Clear to departure\n", str);
 	// release runways
 	if (plane->type == PLANE_AIRBUS_A380) {
 		for (int i = 0; i < 3; ++i) {   // Loop: repeat until the plane left the last region
 			// get random time, announce intended sleep duration
 			int sleep_time = rand() % 1000000; // 0 - 1 seconds
-			char str[100];  // a string to hold plane's info
 
 			print_helper(str, plane);  // load plane information
 			printf("%s: is rolling to runway %d\n", str, plane->myRunway[i]);
@@ -200,7 +199,6 @@ void Takeoff(Plane *plane) {
 		for (int i = 0; i < 2; ++i) {   // Loop: repeat until the plane left the last region
 			// get random time, announce intended sleep duration
 			int sleep_time = rand() % 1000000; // 0 - 1 seconds
-			char str[100];  // a string to hold plane's info
 
 			print_helper(str, plane);   // load plane information
 			printf("%s: is rolling to runway %d\n", str, plane->myRunway[i]);
@@ -213,13 +211,13 @@ void Takeoff(Plane *plane) {
 
 void Flying(Plane *plane) {
 	plane->current_state = STATE_FLYING;
+    char str[100];
+    print_helper(str, plane);
+    printf(" ------ %s: Climb and Maintain %d000, Performing Airfield Traffic Pattern\n", str, rand() % 4 + 3);
 	// get random time, announce intended sleep duration
 	int sleep_time = rand() % 10000000; // 0 - 10 seconds
 
-	char str[100];
-	print_helper(str, plane);
 	printf("%s: sleep for %7d μs in the air\n", str, sleep_time);
-
 	usleep(sleep_time);
 	Await_Landing(plane);
 }
@@ -228,7 +226,7 @@ void Await_Landing(Plane *plane) {
 	plane->current_state = STATE_AWAIT_LANDING;
 	char str[100];
 	print_helper(str, plane);
-	printf("%s: Await_Takeoff\n", str);
+	printf(" ------ %s: Inbound for Landing\n", str);
 
 	// chose random order to use the set of runways
 	int reverse = rand() % 2;
@@ -261,7 +259,7 @@ void Await_Landing(Plane *plane) {
 	}
 
 	// print intended runway order
-	printf("%s: Lineup at Runway ", str);
+	printf("%s: Request Landing at Runway ", str);
 	for (int i = 0; i < my_runway_size; ++i) {
 		printf("%d", plane->myRunway[i]);
 	}
@@ -307,13 +305,12 @@ void Landing(Plane *plane) {
 	char str[100];
 	print_helper(str, plane);
 
-	printf("%s: Clear for landing\n", str);
+	printf(" ------ %s: Cleared to land\n", str);
 	// release runways
 	if (plane->type == PLANE_AIRBUS_A380) {
 		for (int i = 0; i < 3; ++i) {   // Loop: repeat until the plane left the last region
 			// get random time, announce intended sleep duration
 			int sleep_time = rand() % 1000000; // 0 - 1 seconds
-			char str[100];  // a string to hold plane's info
 
 			print_helper(str, plane);  // load plane information
 			printf("%s: is landing on runway %d\n", str, plane->myRunway[i]);
@@ -324,7 +321,6 @@ void Landing(Plane *plane) {
 		for (int i = 0; i < 2; ++i) {   // Loop: repeat until the plane left the last region
 			// get random time, announce intended sleep duration
 			int sleep_time = rand() % 1000000; // 0 - 1 seconds
-			char str[100];  // a string to hold plane's info
 
 			print_helper(str, plane);   // load plane information
 			printf("%s: is landing on runway %d\n", str, plane->myRunway[i]);

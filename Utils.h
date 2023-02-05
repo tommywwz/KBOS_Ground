@@ -14,7 +14,6 @@
 #define LONG_RWY_COUNT 2
 #define SMALL_PLANE_COUNT 30
 #define LARGE_PLANE_COUNT 15
-#define RUNWAY_COMBINATIONS_COUNT 8
 
 typedef enum state {
 	STATE_IDLE,
