@@ -113,7 +113,7 @@ void Idle(Plane *plane) {
 	else if (plane->rounds == LOG_ROUNDS_COUNT) {
 		// write to csv file
 		fclose(plane->log_file);
-		printf("%s: log file closed------------------------\n", str);
+		printf("%s: log file saved\n", str);
 	} else {
 		// log state change
 		fprintf(plane->log_file, "1,0,%d\n", sleep_time);
