@@ -1,0 +1,41 @@
+# Taking Flight Problem Explanation
+
+### Solution Structure
+
+A simple Finite State Machine was designed to perform each state and handle the transition between them. The structure of this FSM is: Idle --> Await_Takeoff --> Takeoff --> Flying --> Await_Landing --> Landing --> Idle -->...
+
+A Plane structure was initialized with the following parameters:
+- plane id
+- plane type
+- plane's current runway decision
+- plane's current state
+
+We also added the following parameters for the additional visualization functionality:
+- log file pointer
+- completed rounds
+- real runway decision
+
+This struct holds the plane information and being used as the parameter to pass through each state.
+
+### Deadlock Condition
+
+ A deadlock will happen when the following conditions are met:
+
+- Mutual Exclusion
+- Hold and Wait
+- No Preemption
+- Circular Wait
+
+The first 3 of these conditions are met in the problem.
+
+- Each aircraft need to ensure mutual exclusion to avoid collision.
+- Each aircraft holds a resource (the runway's semaphore) and waits for another resource (another runway's semaphore) to be released.
+- There is no preemption in the problem, as the aircraft are not allowed to take off or land if the runway is occupied.
+
+### Deadlock Prevention
+
+But, our solution avoids deadlock by breaking the circular wait condition. The solution is based on the idea that dispite each aircraft will take off and land in different orders, they will always wait for resources in one order(based on runway numbers). This ensures a aircraft holding a higher number runway will always already have the lower number runway, and will not need to wait for it. This way, the circular wait is broken and the deadlock is avoided.
+
+### Decreased Parallelism
+
+The solution decreases the parallelism of the problem, as the aircraft will always take control of runways in the same order, instead of using the best possible solution. This is a tradeoff that was made to avoid deadlock.
