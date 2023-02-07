@@ -180,7 +180,7 @@ void Await_Takeoff(Plane *plane) {
 				printf("\t%s: Waiting - runway %d is occupied\n", str, long_runways[random_index].runway_name[i]);
 				// sleep on a semaphore until it is able to proceed
 				sem_wait(long_runways[random_index].sem_runway_regions[i]);
-                printf("\t%s: Occupying runway %d\n", str, long_runways[random_index].runway_name[i]);
+				printf("\t%s: Occupying runway %d\n", str, long_runways[random_index].runway_name[i]);
 			} else {
 				// if not occupied, occupy the runways and proceed to take off, print to console that it is doing so
 				printf("\t%s: Occupying runway %d\n", str, long_runways[random_index].runway_name[i]);
@@ -195,7 +195,7 @@ void Await_Takeoff(Plane *plane) {
 
 				// sleep on a semaphore until it is able to proceed
 				sem_wait(short_runways[random_index].sem_runway_regions[i]);
-                printf("\t%s: Occupying runway %d\n", str, short_runways[random_index].runway_name[i]);
+				printf("\t%s: Occupying runway %d\n", str, short_runways[random_index].runway_name[i]);
 			} else {
 				// if not occupied, occupy the runways and proceed to take off, print to console that it is doing so
 				printf("\t%s: Occupying runway %d\n", str, short_runways[random_index].runway_name[i]);
@@ -254,9 +254,9 @@ void Takeoff(Plane *plane) {
 
 void Flying(Plane *plane) {
 	plane->current_state = STATE_FLYING;
-    char str[100];
-    print_helper(str, plane);
-    printf(CYN"%s: Climb and Maintain %d000, Performing Airfield Traffic Pattern\n"RESET, str, rand() % 4 + 3);
+	char str[100];
+	print_helper(str, plane);
+	printf(CYN"%s: Climb and Maintain %d000, Performing Airfield Traffic Pattern\n"RESET, str, rand() % 4 + 3);
 	// get random time, announce intended sleep duration
 	int sleep_time = rand() % 3000000; // 0 - 3 seconds
 
@@ -324,7 +324,7 @@ void Await_Landing(Plane *plane) {
 				printf("\t%s: Waiting - runway %d is occupied\n", str, long_runways[random_index].runway_name[i]);
 				// sleep on a semaphore until it is able to proceed
 				sem_wait(long_runways[random_index].sem_runway_regions[i]);
-                printf("\t%s: Occupying runway %d\n", str, long_runways[random_index].runway_name[i]);
+				printf("\t%s: Occupying runway %d\n", str, long_runways[random_index].runway_name[i]);
 			} else {
 				// if not occupied, occupy the runways and proceed to take off, print to console that it is doing so
 				printf("\t%s: Occupying runway %d\n", str, long_runways[random_index].runway_name[i]);
@@ -339,7 +339,7 @@ void Await_Landing(Plane *plane) {
 
 				// sleep on a semaphore until it is able to proceed
 				sem_wait(short_runways[random_index].sem_runway_regions[i]);
-                printf("\t%s: Occupying runway %d\n", str, short_runways[random_index].runway_name[i]);
+				printf("\t%s: Occupying runway %d\n", str, short_runways[random_index].runway_name[i]);
 			} else {
 				// if not occupied, occupy the runways and proceed to take off, print to console that it is doing so
 				printf("\t%s: Occupying runway %d\n", str, short_runways[random_index].runway_name[i]);

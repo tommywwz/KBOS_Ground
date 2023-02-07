@@ -10,19 +10,19 @@
 #include <string.h>
 #include <sys/time.h>
 
-#define YEL   "\x1B[33m"
+#define YEL  "\x1B[33m"
 #define MAG  "\x1B[35m"
 #define CYN  "\x1B[36m"
-#define GRN   "\x1B[32m"
+#define GRN  "\x1B[32m"
 #define BLU  "\x1B[34m"
-#define WHT   "\x1B[37m"
+#define WHT  "\x1B[37m"
 #define RESET "\x1B[0m"
 #define RWY_REGIONS_COUNT 6
 #define SHORT_RWY_COUNT 6
 #define LONG_RWY_COUNT 2
-#define SMALL_PLANE_COUNT 2
-#define LARGE_PLANE_COUNT 1
-#define LOG_ROUNDS_COUNT 3
+#define SMALL_PLANE_COUNT 30
+#define LARGE_PLANE_COUNT 15
+#define LOG_ROUNDS_COUNT 2
 
 typedef enum state {
 	STATE_IDLE,
@@ -40,19 +40,19 @@ typedef enum plane_type {
 
 typedef struct runway_combinations_long_sems {
 	// array of runway semaphores
-	sem_t* sem_runway_regions[3];
+	sem_t *sem_runway_regions[3];
 	int runway_name[3];
 } runway_combinations_long_sems;
 
 typedef struct runway_combinations_short_sems {
 	// array of runway semaphores
-	sem_t* sem_runway_regions[2];
+	sem_t *sem_runway_regions[2];
 	int runway_name[2];
 } runway_combinations_short_sems;
 
 typedef struct Plane {
 	int id;
-    int myRunway[3];
+	int myRunway[3];
 	plane_type type;
 	state current_state;
 	FILE *log_file;
