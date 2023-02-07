@@ -48,20 +48,23 @@ void get_real_runway(Plane *plane) {
 				plane->realRunway[i] = plane->myRunway[i];
 
 		}
-	}
-	if (strcmp(str, "14") == 0 ||
-	    strcmp(str, "41") == 0 ||
-	    strcmp(str, "23") == 0 ||
-	    strcmp(str, "32") == 0 ||
-	    strcmp(str, "35") == 0 ||
-	    strcmp(str, "53") == 0 ||
-	    strcmp(str, "46") == 0 ||
-	    strcmp(str, "64") == 0) {
+	} else if (strcmp(str, "14") == 0 ||
+	           strcmp(str, "41") == 0 ||
+	           strcmp(str, "23") == 0 ||
+	           strcmp(str, "32") == 0 ||
+	           strcmp(str, "35") == 0 ||
+	           strcmp(str, "53") == 0 ||
+	           strcmp(str, "46") == 0 ||
+	           strcmp(str, "64") == 0) {
 		for (int i = 0; i < 2; ++i) {
 			if (plane->myRunway[i] < 5)
 				plane->realRunway[i] = plane->myRunway[i] + 6;
 			else
 				plane->realRunway[i] = plane->myRunway[i];
+		}
+	} else {
+		for (int i = 0; i < 2; ++i) {
+			plane->realRunway[i] = plane->myRunway[i];
 		}
 	}
 }
